@@ -28,11 +28,18 @@ inputs:
 outputs:
   version:
     description: 'The current version (whether updated or not)'
-    value: ${{ steps.get-outputs.outputs.version }}
+    value: ${{ steps.get-current-version.outputs.version }}
+  initial-version:
+    description: 'The initial version'
+    value: ${{ steps.get-initial-version.outputs.version }}
 
 runs:
   using: "composite"
   steps:
+    - name: Get initial outputs
+      id: get-initial-version
+      shell: bash
+      run: echo "::set-output name=version::$(${{github.action_path}}/get-version.sh)"
     - name: Bump Version
       env:
         TOKEN: ${{ inputs.github-token }}
@@ -40,11 +47,11 @@ runs:
         NAME: github-actions[bot]
       run: ${{github.action_path}}/version-bump.sh
       shell: bash
-    - name: Set outputs
-      id: get-outputs
+    - name: Get current version
+      id: get-current-version
       shell: bash
       run: echo "::set-output name=version::$(${{github.action_path}}/get-version.sh)"
     - name: Result
       shell: bash
-      run: "echo 'Version is now ${{ steps.get-outputs.outputs.version }}'"
+      run: "echo 'Version is now ${{ steps.get-current-version.outputs.version }}'"
 
