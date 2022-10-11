@@ -19,7 +19,7 @@ inputs:
   git-email:
     description: 'The email address used to create the version bump commit with.'
     required: true
-    default: 41898282+github-actions[bot]@users.noreply.github.com
+    default: bumpVersionBot@users.noreply.github.com
   git-username:
     description: 'The name to use for the version bump commit. e.g. github.actor'
     required: true
@@ -43,8 +43,8 @@ runs:
     - name: Bump Version
       env:
         TOKEN: ${{ inputs.github-token }}
-        EMAIL: bumpVersionBot@users.noreply.github.com
-        NAME: github-actions[bot]
+        EMAIL: ${{ inputs.git-email }}
+        NAME:  ${{ inputs.git-username }}
       run: ${{github.action_path}}/version-bump.sh
       shell: bash
     - name: Get current version
