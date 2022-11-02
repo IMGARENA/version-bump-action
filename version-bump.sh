@@ -31,11 +31,6 @@ function bump {
     esac
 }
 
-git config --global user.email $EMAIL
-git config --global user.name $NAME
-
-OLD_VERSION=$($DIR/get-version.sh)
-
 BUMP_MODE="none"
 if git log -1 | grep -q "#major"; then
   BUMP_MODE="major"
@@ -48,42 +43,66 @@ fi
 
 if [ -f ./pom.xml ] ; then
     DEPENDENCY_SYSTEM=MAVEN
-    BUILD_FILE=./pom.xml
+    VERSION_FILE=./pom.xml
 else
     DEPENDENCY_SYSTEM=GRADLE
-    if [ -f ./build.gradle ] ; then
-        BUILD_FILE=./build.gradle
-        TYPE=GROOVY
+    if [ -f gradle.properties ] && grep -E -q "version=${CURRENT_VERSION}" gradle.properties
+    then
+      VERSION_FILE=./gradle.properties
+    elif [ -f ./build.gradle ] ; then
+      VERSION_FILE=./build.gradle
     elif [ -f ./build.gradle.kts ]; then
-        BUILD_FILE=./build.gradle.kts
-        TYPE=KOTLIN
+      VERSION_FILE=./build.gradle.kts
     fi
 fi
 
-PRETTIFIED_BUILD_FILE=`basename ${BUILD_FILE}`
+PRETTIFIED_VERSION_FILE=$(basename ${VERSION_FILE})
 
 if [[ "${BUMP_MODE}" == "none" ]]
 then
-  echo "No matching commit tags found."
-  echo "${PRETTIFIED_BUILD_FILE} will remain at" $OLD_VERSION
-else
-  echo $BUMP_MODE "version bump detected"
-  bump $BUMP_MODE $OLD_VERSION
-  echo "${PRETTIFIED_BUILD_FILE} will be bumped from" $OLD_VERSION "to" $NEW_VERSION
-  if [ "${DEPENDENCY_SYSTEM}" = "MAVEN" ]; then
-    echo going_here
-    mvn -q versions:set -DnewVersion="${NEW_VERSION}"
-  elif [ "${DEPENDENCY_SYSTEM}" = "GRADLE" ]; then
-    if [ "${TYPE}" == "GROOVY" ]; then
-        sed -i "s/$OLD_VERSION/$NEW_VERSION/" $BUILD_FILE
-    elif [ "${TYPE}" == "KOTLIN" ]; then
-        sed -i "s/version = \"$OLD_VERSION\"/version = \"$NEW_VERSION\"/" $BUILD_FILE
-    fi
-  fi
-  git add $BUILD_FILE
-  REPO="https://$GITHUB_ACTOR:$TOKEN@github.com/$GITHUB_REPOSITORY.git"
-  git commit -m "Bump ${PRETTIFIED_BUILD_FILE} from $OLD_VERSION to $NEW_VERSION"
-  git tag $NEW_VERSION
-  git push $REPO --follow-tags
-  git push $REPO --tags
+  echo "### No Release Occurred
+
+No matching commit tags found.
+${PRETTIFIED_BUILD_FILE} will remain at ${CURRENT_VERSION}" >> "${GITHUB_STEP_SUMMARY}"
+  exit 0
 fi
+
+echo "$BUMP_MODE version bump detected"
+
+bump $BUMP_MODE "${CURRENT_VERSION}"
+
+SUMMARY_MSG="Release ${NEW_VERSION}
+
+Bump ${PRETTIFIED_VERSION_FILE} from ${CURRENT_VERSION} to ${NEW_VERSION}"
+COMMIT_MSG="${SUMMARY_MSG}
+[skip actions]"
+
+echo "----"
+echo "${SUMMARY_MSG}"
+echo "----"
+
+echo "### ${SUMMARY_MSG}" >> "${GITHUB_STEP_SUMMARY}"
+
+if [ "${DEPENDENCY_SYSTEM}" = "MAVEN" ]; then
+  mvn -q versions:set -DnewVersion="${NEW_VERSION}"
+elif [ "${DEPENDENCY_SYSTEM}" = "GRADLE" ]; then
+  sed -i "s/\(version *= *['\"]*\)${CURRENT_VERSION}\(['\"]*\)/\1${NEW_VERSION}\2/" ${VERSION_FILE}
+fi
+
+git add $VERSION_FILE
+git commit -m "${COMMIT_MSG}"
+git tag "${NEW_VERSION}"
+
+# The actions/checkout sets the git header authorisation which will be used over any url authorisation
+# This means the below "repo" arg wont do anything
+# Preserve the header, unset it then push using the provided authentication
+HEADER=$(git config --local --get http.https://github.com/.extraheader)
+git config --local --unset http.https://github.com/.extraheader
+
+REPO="https://$TOKEN@github.com/$GITHUB_REPOSITORY.git"
+git push --repo="${REPO}" --follow-tags || exit 1
+git push --repo="${REPO}" --tags || exit 1
+
+# Re-set the header back in to allow subsequent actions to expect it
+git config --local http.https://github.com/.extraheader "${HEADER}"
+
