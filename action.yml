@@ -12,10 +12,13 @@ inputs:
   github-token:
     description: 'A GitHub auth token to be able to create the pull request'
     required: true
-  gradle-path:
+  version-filepath:
     description: 'The relative location of your build.gradle file'
     required: false
     default: '.'
+  sub-project:
+    description: 'If multi-project specify the project to bump'
+    required: false
   git-author-email:
     description: 'The email address to be used as the author for the release'
     required: false
@@ -65,8 +68,13 @@ runs:
         else
           echo "git-committer-username=${{ inputs.git-committer-username }}" >> $GITHUB_OUTPUT
         fi
+        if [ -z ${{ inputs.version-filepath }} ]; then 
+          echo "version-filepath=." >> $GITHUB_OUTPUT
+        else
+          echo "version-filepath=${{ inputs.version-filepath }}" >> $GITHUB_OUTPUT
+        fi
 
-        echo "current-version=$(${{github.action_path}}/get-version.sh)" >> $GITHUB_OUTPUT
+        echo "current-version=$(${{github.action_path}}/get-version.sh ${{inputs.sub-project}}" >> $GITHUB_OUTPUT
 
     - name: Bump Version
       id: bump
@@ -77,6 +85,7 @@ runs:
         GIT_COMMITTER_NAME: ${{ steps.config.outputs.git-committer-username }}
         GIT_COMMITTER_EMAIL: ${{ steps.config.outputs.git-committer-email }}
         CURRENT_VERSION: ${{ steps.config.outputs.current-version }}
+        VERSION_FILEPATH: ${{ steps.config.outputs.version-filepath }}
       run: ${{github.action_path}}/version-bump.sh
       shell: bash
 

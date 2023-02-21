@@ -62,7 +62,8 @@ The action will accept the following inputs:
 | Parameter                | Required | Description                                                   | Default                                        |
 |--------------------------|----------|---------------------------------------------------------------|------------------------------------------------|
 | `github-token`           | Yes      | A GitHub auth token to be able to create the pull request     |                                                |
-| `gradle-path`            | No       | The relative location of your "build" file                    | `.`                                            |
+| `version-filepath`       | No       | The relative location of your "build" file                    | `.` |
+| `sub-project`            | No       | If multi-project specify the project to bump                     | `:my-super-project` |
 | `git-author-email`       | No       | The email address to be used as the author for the release    | `${{ github.actor }}@users.noreply.github.com` |
 | `git-author-username`    | No       | The name to be used as the author for the release             | `${{ github.actor }}`                          |  
 | `git-committer-email`    | No       | The email address to be used as the committer for the release | `bumpVersionBot@users.noreply.github.com`      |
