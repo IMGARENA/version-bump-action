@@ -46,13 +46,13 @@ if [ -f ./pom.xml ] ; then
     VERSION_FILE=./pom.xml
 else
     DEPENDENCY_SYSTEM=GRADLE
-    if [ -f gradle.properties ] && grep -E -q "version=${CURRENT_VERSION}" gradle.properties
+    if [ -f ${VERSION_FILEPATH}/gradle.properties ] && grep -E -q "version=${CURRENT_VERSION}" ${VERSION_FILEPATH}/gradle.properties
     then
-      VERSION_FILE=./gradle.properties
-    elif [ -f ./build.gradle ] ; then
-      VERSION_FILE=./build.gradle
-    elif [ -f ./build.gradle.kts ]; then
-      VERSION_FILE=./build.gradle.kts
+      VERSION_FILE=${VERSION_FILEPATH}/gradle.properties
+    elif [ -f ${VERSION_FILEPATH}/build.gradle ] ; then
+      VERSION_FILE=${VERSION_FILEPATH}/build.gradle
+    elif [ -f ${VERSION_FILEPATH}/build.gradle.kts ]; then
+      VERSION_FILE=${VERSION_FILEPATH}/build.gradle.kts
     fi
 fi
 
