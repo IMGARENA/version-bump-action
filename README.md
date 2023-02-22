@@ -59,15 +59,15 @@ It does not have to be in the commit title.
 
 The action will accept the following inputs:
 
-| Parameter                | Required | Description                                                   | Default                                        |
+| Parameter                | Required | Description                                                   | Default                                        |  Alternative example  |
 |--------------------------|----------|---------------------------------------------------------------|------------------------------------------------|
 | `github-token`           | Yes      | A GitHub auth token to be able to create the pull request     |                                                |
-| `version-filepath`       | No       | The relative location of your "build" file                    | `.` |
-| `sub-project`            | No       | If multi-project specify the project to bump                     | `my-super-project` |
-| `git-author-email`       | No       | The email address to be used as the author for the release    | `${{ github.actor }}@users.noreply.github.com` |
-| `git-author-username`    | No       | The name to be used as the author for the release             | `${{ github.actor }}`                          |  
-| `git-committer-email`    | No       | The email address to be used as the committer for the release | `bumpVersionBot@users.noreply.github.com`      |
-| `git-committer-username` | No       | The name to be used as the committer for the release          | `github-actions[bot]`                          |
+| `version-filepath`       | No       | The relative location of your "build" file                    | `.` | /services/my-super-service |
+| `sub-project`            | No       | If multi-project specify the project to bump                     |  | my-super-project |
+| `git-author-email`       | No       | The email address to be used as the author for the release    | `${{ github.actor }}@users.noreply.github.com` | |
+| `git-author-username`    | No       | The name to be used as the author for the release             | `${{ github.actor }}`                          |   |
+| `git-committer-email`    | No       | The email address to be used as the committer for the release | `bumpVersionBot@users.noreply.github.com`      | |
+| `git-committer-username` | No       | The name to be used as the committer for the release          | `github-actions[bot]`                          | |
 
 ## Outputs
 

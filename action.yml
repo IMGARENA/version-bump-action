@@ -74,7 +74,7 @@ runs:
           echo "version-filepath=${{ inputs.version-filepath }}" >> $GITHUB_OUTPUT
         fi
 
-        echo "current-version=$(${{github.action_path}}/get-version.sh ${{inputs.sub-project}}" >> $GITHUB_OUTPUT
+        echo "current-version=$(${{github.action_path}}/get-version.sh ${{inputs.sub-project}})" >> $GITHUB_OUTPUT
 
     - name: Bump Version
       id: bump
